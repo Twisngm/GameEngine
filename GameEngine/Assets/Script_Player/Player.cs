@@ -4,19 +4,24 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
     [SerializeField] private InputActionAsset Input;
-    [SerializeField] private double Maxspeed; // 이동속도 제한을 위한 변수
-    [SerializeField] private int Atkdmg;
-    public int CharacterValue;
+    [SerializeField] private float Maxspeed; // 이동속도 제한을 위한 변수
+    [SerializeField] private float JumpPower; // 점프력
+    [SerializeField] private int Atkdmg; // 공격력
+
+    public int CharacterValue; // 게임매니저에서 확인&변경하기 위해 public
 
     private InputAction MoveAction; // 이동 (매니저에서 Y축 이동에 대한 재정의 필요)
     private InputAction AttackAction; // 기본공격
     private InputAction Skill1;
     private InputAction Skill2;
+
+    private bool JumpChecker;
     Rigidbody2D Rigidbody;
 
     Vector2 MoveDirection;
     void Start()
     {
+        JumpChecker = false;
         Rigidbody = GetComponent<Rigidbody2D>();
         MoveAction = Input.FindActionMap("Player").FindAction("Move");
         MoveAction.performed += Move_perform;
@@ -27,7 +32,8 @@ public class Player : MonoBehaviour
         Skill1 = Input.FindActionMap("Player").FindAction("Skill1");
         Skill2 = Input.FindActionMap("Player").FindAction("Skill2");
 
-        if (CharacterValue == 1) {
+        if (CharacterValue == 1)
+        {
             Skill1.performed += SwordSkill1;
             Skill2.performed += SwordSkill2;
         }
@@ -48,6 +54,11 @@ public class Player : MonoBehaviour
     }
     void Move(Vector2 Direction)
     {
+        if (Direction.y > 0 && JumpChecker == false)
+        {
+            Rigidbody.AddForce(new Vector2(0, JumpPower));
+            JumpChecker = true;
+        }
         Rigidbody.linearVelocityX = Direction.x;
     }
 
