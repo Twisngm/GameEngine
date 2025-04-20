@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
+
 public class Player : MonoBehaviour
 {
     [SerializeField] private InputActionAsset Input;
@@ -15,14 +17,16 @@ public class Player : MonoBehaviour
     private InputAction Skill1;
     private InputAction Skill2;
 
-    private bool JumpChecker;
+    Collider2D collision;
     Rigidbody2D Rigidbody;
 
+    [SerializeField] private bool JumpChecker;
     Vector2 MoveDirection;
     void Start()
     {
         JumpChecker = false;
         Rigidbody = GetComponent<Rigidbody2D>();
+        collision = GetComponent<Collider2D>();
         MoveAction = Input.FindActionMap("Player").FindAction("Move");
         MoveAction.performed += Move_perform;
 
@@ -40,6 +44,7 @@ public class Player : MonoBehaviour
     }
     void FixedUpdate()
     {
+        MoveDirection = MoveAction.ReadValue<Vector2>();
         Move(MoveDirection);
     }
 
@@ -61,7 +66,13 @@ public class Player : MonoBehaviour
         }
         Rigidbody.linearVelocityX = Direction.x;
     }
-
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.tag == "Map")
+        {
+            JumpChecker = false;
+        }
+    }
     void SwordSkill1(InputAction.CallbackContext obj)
     {
 
