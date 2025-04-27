@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,14 +20,19 @@ public class Player : MonoBehaviour
 
     Collider2D collision;
     Rigidbody2D Rigidbody;
+    Animator PlayerAnimator;
+    SpriteRenderer sprite;
 
-    [SerializeField] private bool JumpChecker;
     Vector2 MoveDirection;
     void Start()
     {
-        JumpChecker = false;
         Rigidbody = GetComponent<Rigidbody2D>();
         collision = GetComponent<Collider2D>();
+        PlayerAnimator = GetComponent<Animator>();
+        sprite = GetComponent<SpriteRenderer>();
+
+        PlayerAnimator.SetBool("Jump", false);
+
         MoveAction = Input.FindActionMap("Player").FindAction("Move");
         MoveAction.performed += Move_perform;
 
@@ -51,26 +57,51 @@ public class Player : MonoBehaviour
     void Move_perform(InputAction.CallbackContext obj) //콜백 호출과 실제 이동 분리
     {
         MoveDirection = obj.ReadValue<Vector2>();
+        PlayerAnimator.SetBool("Walk", true);
         Debug.Log(MoveDirection.x + " " + MoveDirection.y);
     }
     void DefaultAttack_perform(InputAction.CallbackContext obj)
     {
         Debug.Log("DefaultAttack");
+        PlayerAnimator.SetBool("Attack", true);
+        StopCoroutine("AttackCoroutine");
+        StartCoroutine("AttackCoroutine");
     }
+
+    IEnumerator AttackCoroutine()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        PlayerAnimator.SetBool("Attack", false);
+        yield break;
+    }
+
     void Move(Vector2 Direction)
     {
-        if (Direction.y > 0 && JumpChecker == false)
+        if (Direction.y > 0 && PlayerAnimator.GetBool("Jump") == false)
         {
             Rigidbody.AddForce(new Vector2(0, JumpPower));
-            JumpChecker = true;
+            PlayerAnimator.SetBool("Jump", true);
         }
-        Rigidbody.linearVelocityX = Direction.x;
+        if (PlayerAnimator.GetBool("Attack") == false)
+            Rigidbody.linearVelocityX = Direction.x;
+
+        if (Direction.x > 0)
+        {
+            sprite.flipX = true;
+        }
+        else if (Direction.x == 0) {PlayerAnimator.SetBool("Walk", false); }
+        else
+        {
+            sprite.flipX = false;
+        }
+        
     }
     private void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.tag == "Map")
         {
-            JumpChecker = false;
+            PlayerAnimator.SetBool("Jump", false);
         }
     }
     void SwordSkill1(InputAction.CallbackContext obj)
