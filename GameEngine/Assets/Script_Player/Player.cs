@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float Maxspeed; // 이동속도 제한을 위한 변수
     [SerializeField] private float JumpPower; // 점프력
     [SerializeField] private int Atkdmg; // 공격력
+    [SerializeField] private GameObject AttackRange;
 
     public int CharacterValue; // 게임매니저에서 확인&변경하기 위해 public
 
@@ -24,6 +25,13 @@ public class Player : MonoBehaviour
     SpriteRenderer sprite;
 
     Vector2 MoveDirection;
+
+    // default type 변수
+    [SerializeField] float MaxHp; // 플레이어 기본 체력
+    float Hp;
+    [SerializeField] float AtkDmg; // 기본 공격력
+
+    float Atkpos;
     void Start()
     {
         Rigidbody = GetComponent<Rigidbody2D>();
@@ -31,22 +39,24 @@ public class Player : MonoBehaviour
         PlayerAnimator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
 
-        PlayerAnimator.SetBool("Jump", false);
+        PlayerAnimator.SetBool("Jump", false); // 시작시 점프상태가 아니므로 false로 초기화
 
-        MoveAction = Input.FindActionMap("Player").FindAction("Move");
+        MoveAction = Input.FindActionMap("Player").FindAction("Move"); //이동함수 콜백
         MoveAction.performed += Move_perform;
 
-        AttackAction = Input.FindActionMap("Player").FindAction("Attack");
+        AttackAction = Input.FindActionMap("Player").FindAction("Attack"); // 공격함수 콜백
         AttackAction.performed += DefaultAttack_perform;
 
-        Skill1 = Input.FindActionMap("Player").FindAction("Skill1");
-        Skill2 = Input.FindActionMap("Player").FindAction("Skill2");
+        Skill1 = Input.FindActionMap("Player").FindAction("Skill1"); // 스킬1
+        Skill2 = Input.FindActionMap("Player").FindAction("Skill2"); // 스킬2
 
-        if (CharacterValue == 1)
+        if (CharacterValue == 1) // 캐릭터 추가 구현시 사용
         {
             Skill1.performed += SwordSkill1;
             Skill2.performed += SwordSkill2;
         }
+
+        AttackRange.SetActive(false);
     }
     void FixedUpdate()
     {
@@ -64,14 +74,19 @@ public class Player : MonoBehaviour
     {
         Debug.Log("DefaultAttack");
         PlayerAnimator.SetBool("Attack", true);
+        AttackRange.SetActive(true);
+        Atkpos = sprite.flipX == true ? -0.25f : 0.25f;
+        AttackRange.transform.position.Set(Atkpos, 1, 0);
         StopCoroutine("AttackCoroutine");
         StartCoroutine("AttackCoroutine");
     }
 
+
+
     IEnumerator AttackCoroutine()
     {
-        yield return new WaitForSeconds(0.5f);
-
+        yield return new WaitForSeconds(0.7f);
+        AttackRange.SetActive(false);
         PlayerAnimator.SetBool("Attack", false);
         yield break;
     }
@@ -88,6 +103,7 @@ public class Player : MonoBehaviour
 
         if (Direction.x > 0)
         {
+            AttackRange.transform.position.Set(0.25f, 1, 0);
             sprite.flipX = true;
         }
         else if (Direction.x == 0) {PlayerAnimator.SetBool("Walk", false); }
@@ -103,6 +119,11 @@ public class Player : MonoBehaviour
         {
             PlayerAnimator.SetBool("Jump", false);
         }
+        if (collision.tag == "Enemy")
+        {
+            float Dmg = 10;// = collision.gameObject.GetComponent<Enemy>().Dmg
+            Damaged(Dmg);
+        }
     }
     void SwordSkill1(InputAction.CallbackContext obj)
     {
@@ -113,5 +134,10 @@ public class Player : MonoBehaviour
 
     }
 
-    //void Damaged()
+    void Damaged(float Dmg)
+    {
+        Hp -= Dmg;
+        if (Hp > 0 && PlayerAnimator.GetBool("Attack") == true) PlayerAnimator.SetBool("Hit", true);
+        else { PlayerAnimator.SetBool("Dead", true); }
+    }
 }
