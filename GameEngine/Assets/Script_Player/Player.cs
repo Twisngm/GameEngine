@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,6 +12,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float JumpPower; // 점프력
     [SerializeField] private int Atkdmg; // 공격력
     [SerializeField] private GameObject AttackRange;
+    private Collider2D AttackCollider;
+    private Transform RangeTransform;
 
     public int CharacterValue; // 게임매니저에서 확인&변경하기 위해 public
 
@@ -38,6 +41,8 @@ public class Player : MonoBehaviour
         collision = GetComponent<Collider2D>();
         PlayerAnimator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
+        AttackCollider = AttackRange.GetComponent<Collider2D>();
+        RangeTransform = AttackRange.GetComponent<Transform>();
 
         PlayerAnimator.SetBool("Jump", false); // 시작시 점프상태가 아니므로 false로 초기화
 
@@ -56,7 +61,7 @@ public class Player : MonoBehaviour
             Skill2.performed += SwordSkill2;
         }
 
-        AttackRange.SetActive(false);
+        AttackCollider.enabled = false;
     }
     void FixedUpdate()
     {
@@ -72,21 +77,24 @@ public class Player : MonoBehaviour
     }
     void DefaultAttack_perform(InputAction.CallbackContext obj)
     {
-        Debug.Log("DefaultAttack");
-        PlayerAnimator.SetBool("Attack", true);
-        AttackRange.SetActive(true);
-        Atkpos = sprite.flipX == true ? -0.25f : 0.25f;
-        AttackRange.transform.position.Set(Atkpos, 1, 0);
-        StopCoroutine("AttackCoroutine");
-        StartCoroutine("AttackCoroutine");
+        if (PlayerAnimator.GetBool("Attack") == false)
+        {
+            Debug.Log("DefaultAttack");
+            PlayerAnimator.SetBool("Attack", true);
+            
+            StopCoroutine("AttackCoroutine");
+            StartCoroutine("AttackCoroutine");
+        }
     }
 
 
 
     IEnumerator AttackCoroutine()
     {
-        yield return new WaitForSeconds(0.7f);
-        AttackRange.SetActive(false);
+        yield return new WaitForSeconds(0.4f);
+        AttackCollider.enabled = true;
+        yield return new WaitForSeconds(0.3f);
+        AttackCollider.enabled = false;
         PlayerAnimator.SetBool("Attack", false);
         yield break;
     }
@@ -103,12 +111,13 @@ public class Player : MonoBehaviour
 
         if (Direction.x > 0)
         {
-            AttackRange.transform.position.Set(0.25f, 1, 0);
+            RangeTransform.localPosition = new Vector3(0.25f, 1, 0);
             sprite.flipX = true;
         }
         else if (Direction.x == 0) {PlayerAnimator.SetBool("Walk", false); }
         else
         {
+            RangeTransform.localPosition = new Vector3(-0.25f, 1, 0); 
             sprite.flipX = false;
         }
         
