@@ -1,14 +1,14 @@
 using UnityEngine;
-//using Unity.Behavior;
+using Unity.Behavior;
 
-//[BlakcboardEnum]
+[BlackboardEnum]
 public enum EnemyState
 {
     Idle,
     Patrol,
-    Wander,
     Chase,
-    Attack
+    Attack,
+    Die
 }
 
 public class Enemy : MonoBehaviour
@@ -20,6 +20,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] protected float speed;
 
     protected Animator animator;
+    protected Rigidbody2D rigidbody2d;
     protected bool isDead = false;
     
     // 공격하는 기본 메서드 자식 클래스에서 구현
