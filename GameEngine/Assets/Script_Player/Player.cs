@@ -65,7 +65,7 @@ public class Player : MonoBehaviour
 
         if (CharacterValue == 1) // 캐릭터 추가 구현시 사용
         {
-            Skill1.performed += SwordSkill1;
+            Skill1.performed += PSkill.Bandit_short;
             Skill2.performed += PSkill.Throw;
         }
 
@@ -167,16 +167,6 @@ public class Player : MonoBehaviour
         Physics2D.IgnoreCollision(collision, platformCollider);
         yield return new WaitForSeconds(0.5f);
         Physics2D.IgnoreCollision(collision, platformCollider, false);
-    }
-
-
-    void SwordSkill1(InputAction.CallbackContext obj)
-    {
-
-    }
-    void Throw(InputAction.CallbackContext obj)
-    {
-
     }
 
     void Damaged(float Dmg, Vector2 targetPos)

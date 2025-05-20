@@ -6,9 +6,9 @@ public class PlayerSkill : MonoBehaviour
     [SerializeField] float SkillColldown1;
     [SerializeField] float SkillColldown2;
     [SerializeField] float BulletSpeed;
-    public void Bandit_short()
+    public void Bandit_short(InputAction.CallbackContext obj)
     {
-
+         
     }
     public void Throw(InputAction.CallbackContext obj)
     {
