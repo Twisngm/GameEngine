@@ -41,6 +41,7 @@ public class Player : MonoBehaviour
 
     private GameObject CollisionPlatform;
 
+    PlayerSkill PSkill;
     void Start()
     {
         Dead = false;
@@ -65,7 +66,7 @@ public class Player : MonoBehaviour
         if (CharacterValue == 1) // 캐릭터 추가 구현시 사용
         {
             Skill1.performed += SwordSkill1;
-            Skill2.performed += Throw;
+            Skill2.performed += PSkill.Throw;
         }
 
         AttackCollider.enabled = false;
