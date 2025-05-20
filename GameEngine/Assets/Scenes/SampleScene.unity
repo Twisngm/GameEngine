@@ -133,7 +133,6 @@ GameObject:
   - component: {fileID: 503601431}
   - component: {fileID: 503601436}
   - component: {fileID: 503601437}
-  - component: {fileID: 503601438}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -329,22 +328,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &503601438
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 503601430}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af59d75f05926f94eab39aa14dd2edd5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DaggerPrefeb: {fileID: 0}
-  SkillColldown1: 0
-  SkillColldown2: 0
-  BulletSpeed: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,6 +1056,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1669484830}
   - component: {fileID: 1669484831}
+  - component: {fileID: 1669484832}
   m_Layer: 0
   m_Name: AttackRange
   m_TagString: Untagged
@@ -1141,6 +1125,22 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.0001, y: 1.2}
   m_EdgeRadius: 0
+--- !u!114 &1669484832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1669484829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af59d75f05926f94eab39aa14dd2edd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DaggerPrefeb: {fileID: 3940917689683193221, guid: 1d41071da15b0d641b0142b8ff634f9a, type: 3}
+  SkillColldown1: 0
+  SkillColldown2: 0
+  BulletSpeed: 5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
