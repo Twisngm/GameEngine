@@ -7,10 +7,20 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
+    // default type 변수
+    float Atkpos;
     [SerializeField] private InputActionAsset Input;
-    [SerializeField] private float Maxspeed; // 이동속도 제한을 위한 변수
+    //[SerializeField] private float Maxspeed; // 이동속도 제한을 위한 변수
+    [SerializeField] private float Speed;
     [SerializeField] private float JumpPower; // 점프력
     [SerializeField] private int Atkdmg; // 공격력
+    [SerializeField] float MaxHp; // 플레이어 기본 체력
+    float Hp;
+    [SerializeField] float RangeDmg;
+    private bool Dead;
+
+    [SerializeField] float Hitforce; // 피격시 날아가는 힘
+
     [SerializeField] private GameObject AttackRange;
     private Collider2D AttackCollider;
     private Transform RangeTransform;
@@ -29,14 +39,11 @@ public class Player : MonoBehaviour
 
     Vector2 MoveDirection;
 
-    // default type 변수
-    [SerializeField] float MaxHp; // 플레이어 기본 체력
-    float Hp;
-    [SerializeField] float AtkDmg; // 기본 공격력
+    private GameObject CollisionPlatform;
 
-    float Atkpos;
     void Start()
     {
+        Dead = false;
         Rigidbody = GetComponent<Rigidbody2D>();
         collision = GetComponent<Collider2D>();
         PlayerAnimator = GetComponent<Animator>();
@@ -58,10 +65,11 @@ public class Player : MonoBehaviour
         if (CharacterValue == 1) // 캐릭터 추가 구현시 사용
         {
             Skill1.performed += SwordSkill1;
-            Skill2.performed += SwordSkill2;
+            Skill2.performed += Throw;
         }
 
         AttackCollider.enabled = false;
+        Hp = MaxHp;
     }
     void FixedUpdate()
     {
@@ -77,17 +85,18 @@ public class Player : MonoBehaviour
     }
     void DefaultAttack_perform(InputAction.CallbackContext obj)
     {
-        if (PlayerAnimator.GetBool("Attack") == false)
+        if (PlayerAnimator.GetBool("Attack") == false && PlayerAnimator.GetBool("Jump") == false)
         {
             Debug.Log("DefaultAttack");
+
+            RangeTransform.localPosition = sprite.flipX == true ? new Vector3(0.25f, 1, 0) : new Vector3(-0.25f, 1, 0);
+
             PlayerAnimator.SetBool("Attack", true);
             
             StopCoroutine("AttackCoroutine");
             StartCoroutine("AttackCoroutine");
         }
     }
-
-
 
     IEnumerator AttackCoroutine()
     {
@@ -101,52 +110,91 @@ public class Player : MonoBehaviour
 
     void Move(Vector2 Direction)
     {
-        if (Direction.y > 0 && PlayerAnimator.GetBool("Jump") == false)
+        if (PlayerAnimator.GetBool("Attack") == false && !PlayerAnimator.GetBool("Hit"))
         {
-            Rigidbody.AddForce(new Vector2(0, JumpPower));
-            PlayerAnimator.SetBool("Jump", true);
+            if (Direction.y > 0 && PlayerAnimator.GetBool("Jump") == false && Rigidbody.linearVelocityY == 0)
+            {
+                Rigidbody.AddForce(new Vector2(0, JumpPower));
+                PlayerAnimator.SetBool("Jump", true);
+            }
+            else if (Direction.y < 0 && CollisionPlatform != null)
+            {
+                StartCoroutine(DisableCollision());
+            }
+            Rigidbody.linearVelocityX = Speed * MoveDirection.x;
         }
-        if (PlayerAnimator.GetBool("Attack") == false)
-            Rigidbody.linearVelocityX = Direction.x;
-
-        if (Direction.x > 0)
-        {
-            RangeTransform.localPosition = new Vector3(0.25f, 1, 0);
-            sprite.flipX = true;
-        }
-        else if (Direction.x == 0) {PlayerAnimator.SetBool("Walk", false); }
+        
+        if (Direction.x == 0) {PlayerAnimator.SetBool("Walk", false); }
         else
         {
-            RangeTransform.localPosition = new Vector3(-0.25f, 1, 0); 
-            sprite.flipX = false;
+            if (Direction.x > 0)
+                sprite.flipX = true;
+            else
+                sprite.flipX = false;
         }
         
     }
-    private void OnTriggerStay2D(Collider2D collision)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.tag == "Map")
+
+        if (collision.gameObject.tag == "Map")
         {
             PlayerAnimator.SetBool("Jump", false);
+            if (collision.gameObject.layer != 7)
+            {
+                CollisionPlatform = collision.gameObject;
+            }
         }
-        if (collision.tag == "Enemy")
+        if (collision.gameObject.tag == "Enemy")
         {
+            Debug.Log("Damaged");
             float Dmg = 10;// = collision.gameObject.GetComponent<Enemy>().Dmg
-            Damaged(Dmg);
+            Damaged(Dmg, collision.transform.position);
         }
     }
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Map"))
+        {
+            CollisionPlatform = null;
+        }
+    }
+
+    private IEnumerator DisableCollision()
+    {
+        BoxCollider2D platformCollider = CollisionPlatform.GetComponent<BoxCollider2D>();
+        Physics2D.IgnoreCollision(collision, platformCollider);
+        yield return new WaitForSeconds(0.5f);
+        Physics2D.IgnoreCollision(collision, platformCollider, false);
+    }
+
+
     void SwordSkill1(InputAction.CallbackContext obj)
     {
 
     }
-    void SwordSkill2(InputAction.CallbackContext obj)
+    void Throw(InputAction.CallbackContext obj)
     {
 
     }
 
-    void Damaged(float Dmg)
+    void Damaged(float Dmg, Vector2 targetPos)
     {
         Hp -= Dmg;
-        if (Hp > 0 && PlayerAnimator.GetBool("Attack") == true) PlayerAnimator.SetBool("Hit", true);
-        else { PlayerAnimator.SetBool("Dead", true); }
+        int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
+        if (Hp > 0)
+        {
+            PlayerAnimator.SetBool("Hit", true);
+            Invoke("OffDamaged", 0.5f);
+        }
+        else { PlayerAnimator.SetBool("Dead", true); Dead = true; }
+        Rigidbody.AddForce(new Vector2(dirc * Hitforce, 1), ForceMode2D.Impulse);
+        sprite.color = new Color(1, 1, 1, 0.4f);
     }
+    void OffDamaged()
+    {
+        PlayerAnimator.SetBool("Hit", false);
+        sprite.color = new Color(1, 1, 1, 1);
+    }
+
 }
