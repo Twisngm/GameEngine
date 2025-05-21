@@ -41,7 +41,12 @@ public class Player : MonoBehaviour
 
     private GameObject CollisionPlatform;
 
-    PlayerSkill PSkill;
+    [SerializeField] PlayerSkill PSkill;
+
+    public bool Fliper()
+    {
+        return sprite.flipX;
+    }
     void Start()
     {
         Dead = false;
@@ -90,8 +95,6 @@ public class Player : MonoBehaviour
         {
             Debug.Log("DefaultAttack");
 
-            RangeTransform.localPosition = sprite.flipX == true ? new Vector3(0.25f, 1, 0) : new Vector3(-0.25f, 1, 0);
-
             PlayerAnimator.SetBool("Attack", true);
             
             StopCoroutine("AttackCoroutine");
@@ -133,7 +136,7 @@ public class Player : MonoBehaviour
             else
                 sprite.flipX = false;
         }
-        
+        RangeTransform.localPosition = sprite.flipX == true ? new Vector3(0.25f, 1, 0) : new Vector3(-0.25f, 1, 0);
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
