@@ -1,3 +1,4 @@
+using Unity.Behavior;
 using UnityEngine;
 
 public class Goblin : Enemy
@@ -7,28 +8,30 @@ public class Goblin : Enemy
     {
         animator = GetComponent<Animator>();
         rigidbody2d = GetComponent<Rigidbody2D>();
+        sprite = GetComponent<SpriteRenderer>();
+        attackCollider = GameObject.Find("GoblinAttakcRange").GetComponent<BoxCollider2D>();
+        attackCollider.enabled = false;
+        player = GameObject.FindWithTag("Player");
         state = EnemyState.Patrol;
     }
 
     public override void Attack()
     {
-        state = EnemyState.Attack;
         // 애니메이션 재생
         animator.SetTrigger("Attack");
-        // 진짜 데미지 주는 부분 예정
 
+        base.Attack();
     }
 
     public override void TakeDamage(float damage) 
     {
-        // 피격 데미지 계산 
-        base.TakeDamage(damage);
         // 살아있으면 애니메이션 재생
         if (!isDead)
         {
             animator.SetTrigger("Hit");
         }
-
+        // 피격 데미지 계산 
+        base.TakeDamage(damage);
     }
 
     public override void Die()
@@ -38,10 +41,18 @@ public class Goblin : Enemy
         animator.SetTrigger("Die");
     }
 
+    public override void Move(Vector3 target)
+    {
+        base.Move(target);
+        animator.SetBool("Run", true);
+    }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (!isDead)
+        {
+            HandleState();
+        }
     }
 }
