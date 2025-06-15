@@ -71,9 +71,9 @@ public class Enemy : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         
-        if (other.gameObject.name == "AttackRange")
+        if (other.gameObject.CompareTag("Attack"))
         {
-            TakeDamage(10f);
+            TakeDamage(FindObjectOfType<Player>().GetComponent<Player>().Atkdmg);
         }
     }
 

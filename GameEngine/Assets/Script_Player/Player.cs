@@ -13,7 +13,7 @@ public class Player : MonoBehaviour
     //[SerializeField] private float Maxspeed; // 이동속도 제한을 위한 변수
     [SerializeField] private float Speed;
     [SerializeField] private float JumpPower; // 점프력
-    [SerializeField] private int Atkdmg; // 공격력
+    [SerializeField] public int Atkdmg; // 공격력
     [SerializeField] float MaxHp; // 플레이어 기본 체력
     float Hp;
     [SerializeField] float RangeDmg;
@@ -149,6 +149,15 @@ public class Player : MonoBehaviour
                 CollisionPlatform = collision.gameObject;
             }
         }
+        if (collision.gameObject.tag == "Enemy")
+        {
+            Debug.Log("Damaged");
+            float Dmg = 10;// = collision.gameObject.GetComponent<Enemy>().Dmg
+            Damaged(Dmg, collision.transform.position);
+        }
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
         if (collision.gameObject.tag == "Enemy")
         {
             Debug.Log("Damaged");

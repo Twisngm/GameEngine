@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Behavior;
 using UnityEngine;
 
@@ -40,7 +41,11 @@ public class Goblin : Enemy
         // 애니메이션 재생
         animator.SetTrigger("Die");
     }
-
+    /*IEnumerator DeadDestroy()
+    {
+        yield return new WaitForSeconds(2);
+        Destroy(gameObject);
+    }*/
     public override void Move(Vector3 target)
     {
         base.Move(target);

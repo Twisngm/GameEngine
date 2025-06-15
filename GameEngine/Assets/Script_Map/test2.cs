@@ -120,39 +120,7 @@ public class CellularAutomata : MonoBehaviour
                 Vector3Int cellPosition = new Vector3Int(x, y, 0);
                 if (map[x, y])
                     tilemap.SetTile(cellPosition, wallTile);
-                else
-                {
-                    // 빈 공간에서 위로 JumpValue 만큼 공간이 있는지 확인
-                    int spaceCount = 0;
-                    int n = JumpValue * 2;
-                    // 위로 n만큼 빈 공간이 있는지 확인
-                    for (int checkY = y + 1; checkY < height && spaceCount < n; checkY++)
-                    {
-                        if (!map[x, checkY]) // 빈 공간인 경우
-                        {
-                            spaceCount++;
-                        }
-                        else
-                        {
-                            break; // 벽이 나오면 루프 종료
-                        }
-                    }
-
-                    // 위로 JumpValue 만큼 빈 공간이 있으면 groundTile을 생성
-                    if (spaceCount >= JumpValue)
-                    {
-                        // groundTile을 n-4 만큼 생성 (4는 기본 길이)
-                        int groundLength = Tilewidth;
-                        for (int i = 0; i < groundLength; i++)
-                        {
-                            if (y + i < height) // 맵 범위 내에 있다면
-                            {
-                                Vector3Int groundPosition = new Vector3Int(x, y + i, 0);
-                                tilemap.SetTile(groundPosition, groundTile);
-                            }
-                        }
-                    }
-                }
+                
             }
         }
     }
