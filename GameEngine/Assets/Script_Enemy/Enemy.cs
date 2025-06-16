@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Behavior;
+using System.Collections;
 
 [BlackboardEnum]
 public enum EnemyState
@@ -41,30 +42,29 @@ public class Enemy : MonoBehaviour
     protected SpriteRenderer sprite;
     protected BoxCollider2D attackCollider;
     protected bool isDead = false;
+    protected bool isAttack = false;
 
     protected GameObject player;
     // 공격하는 기본 메서드 자식 클래스에서 구현
     public virtual void Attack()
     {
-        Debug.Log("DefaultAttack");
         // 공격 로직
-        if (attackTimer <= 0)
+        if (attackTimer <= 0 && !isAttack) 
         {
-            // 공격 콜라이더 활성화
-            attackCollider.enabled = true;
+            isAttack = true;
+
+            StopCoroutine(AttackSequence());
+            // 공격 코루틴 실행
+            StartCoroutine(AttackSequence());
 
             // 공격 후 쿨타임 설정
             attackTimer = attackCoolDown;
-
-            // 일정 시간이 지나면 공격 범위 콜라이더를 비활성화
-            Invoke("DeactivateAttackCollider", 0.2f);  // 공격 콜라이더 비활성화 시간은 필요에 따라 조절
         }
     }
 
-    // 공격 범위 콜라이더 비활성화
-    private void DeactivateAttackCollider()
+   protected virtual IEnumerator AttackSequence()
     {
-        attackCollider.enabled = false;
+        yield return null;
     }
 
     // 충돌 체크
@@ -83,7 +83,7 @@ public class Enemy : MonoBehaviour
         if (isDead) return;
         isDead = true;
         animator.SetTrigger("Die");
-        //Destroy(gameObject, 1f);  // 죽은 후 1초 뒤에 삭제
+        Destroy(gameObject, 1f);  // 죽은 후 1초 뒤에 삭제
     }
 
     // 이동하는 기본 메서드
@@ -101,6 +101,15 @@ public class Enemy : MonoBehaviour
         {
             sprite.flipX = true;  // 스프라이트가 왼쪽을 보도록
         }
+        FlipAttackRange();
+    }
+
+    // 공격 범위 콜라이더 반전
+    private void FlipAttackRange()
+    {
+        Vector3 attackPos = attackCollider.transform.localPosition;
+        attackPos.x = Mathf.Abs(attackPos.x) * (sprite.flipX ? -1 : 1);
+        attackCollider.transform.localPosition = attackPos;
     }
 
     // 데미지 계산하는 기본 메서드
@@ -144,6 +153,8 @@ public class Enemy : MonoBehaviour
     private void HandleIdleState(float distanceToPlayer)
     {
         idleTimer += Time.deltaTime;
+
+        animator.SetBool("Run", false);
 
         if (idleTimer >= idleTime)
         {
@@ -190,7 +201,9 @@ public class Enemy : MonoBehaviour
     // Chase 상태 처리
     private void HandleChaseState(float distanceToPlayer)
     {
-        Move(player.transform.position);
+        // 플레이어를 추격할때 y축 위치는 현재 위치로 고정
+        Vector3 target = new Vector3(player.transform.position.x, transform.position.y, transform.position.z);
+        Move(target);
 
         if (distanceToPlayer <= attackRange)
         {
@@ -207,18 +220,22 @@ public class Enemy : MonoBehaviour
     private void HandleAttackState(float distanceToPlayer)
     {
         // 공격 쿨타임 체크
-        if (attackTimer > 0)
-        {
-            attackTimer -= Time.deltaTime;
-        }
-        else
+        if (attackTimer <= 0f)
         {
             Attack();  // 공격 실행
         }
-        if (distanceToPlayer > attackRange)
+
+        if (distanceToPlayer > attackRange && !isAttack)
         {
             state = EnemyState.Chase;  // 공격 범위를 벗어나면 다시 Chase 상태로 변경
         }
+    }
+
+    // 공격 쿨타임 감소
+    protected virtual void HandleCooldowns()
+    {
+        if (attackTimer > 0)
+            attackTimer -= Time.deltaTime;
     }
 
     // Die 상태 처리

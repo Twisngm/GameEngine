@@ -1,8 +1,7 @@
 using System.Collections;
-using Unity.Behavior;
 using UnityEngine;
 
-public class Goblin : Enemy
+public class Skeleton : Enemy
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -10,12 +9,11 @@ public class Goblin : Enemy
         animator = GetComponent<Animator>();
         rigidbody2d = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
-        attackCollider = transform.Find("GoblinAttackRange").GetComponent<BoxCollider2D>();
+        attackCollider = transform.Find("SkeletonAttackRange").GetComponent<BoxCollider2D>();
         attackCollider.enabled = false;
         player = GameObject.FindWithTag("Player");
         state = EnemyState.Patrol;
     }
-
     public override void Attack()
     {
         // 애니메이션 재생
@@ -26,14 +24,14 @@ public class Goblin : Enemy
 
     protected override IEnumerator AttackSequence()
     {
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(0.5f);
         attackCollider.enabled = true;
         yield return new WaitForSeconds(0.2f);
         attackCollider.enabled = false;
         isAttack = false;
     }
 
-    public override void TakeDamage(float damage) 
+    public override void TakeDamage(float damage)
     {
         // 살아있으면 애니메이션 재생
         if (!isDead)
@@ -48,7 +46,7 @@ public class Goblin : Enemy
     {
         base.Die();
         // 애니메이션 재생
-        //animator.SetTrigger("Die");
+        // animator.SetTrigger("Die");
     }
     /*IEnumerator DeadDestroy()
     {
@@ -57,9 +55,8 @@ public class Goblin : Enemy
     }*/
     public override void Move(Vector3 target)
     {
-        animator.SetBool("Run", true);
         base.Move(target);
-        
+        animator.SetBool("Run", true);
     }
 
     // Update is called once per frame
