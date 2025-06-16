@@ -15,6 +15,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float JumpPower; // 점프력
     [SerializeField] public int Atkdmg; // 공격력
     [SerializeField] float MaxHp; // 플레이어 기본 체력
+    [SerializeField] UIManager UI;
     float Hp;
     [SerializeField] float RangeDmg;
     private bool Dead;
@@ -49,6 +50,7 @@ public class Player : MonoBehaviour
     }
     void Start()
     {
+        
         Dead = false;
         Rigidbody = GetComponent<Rigidbody2D>();
         collision = GetComponent<Collider2D>();
@@ -76,6 +78,7 @@ public class Player : MonoBehaviour
 
         AttackCollider.enabled = false;
         Hp = MaxHp;
+        UI.SetHP(Hp, MaxHp);
     }
     void FixedUpdate()
     {
@@ -184,6 +187,7 @@ public class Player : MonoBehaviour
     void Damaged(float Dmg, Vector2 targetPos)
     {
         Hp -= Dmg;
+        UI.SetHP(Hp, MaxHp);
         int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
         if (Hp > 0)
         {

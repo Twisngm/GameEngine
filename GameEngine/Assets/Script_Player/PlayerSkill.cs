@@ -5,9 +5,12 @@ using UnityEngine.InputSystem;
 public class PlayerSkill : MonoBehaviour
 {
     [SerializeField] GameObject DaggerPrefeb;
+    float SkillTimer1;
+    float SkillTimer2;
     [SerializeField] float SkillColldown1;
     [SerializeField] float SkillColldown2;
     [SerializeField] float BulletSpeed;
+    [SerializeField] UIManager UI;
 
     [SerializeField] bool Penetration;
 
@@ -20,13 +23,25 @@ public class PlayerSkill : MonoBehaviour
     {
         animator = GetComponent<Animator>();
     }
-
+    private void Update()
+    {
+        SkillTimer1 += Time.deltaTime;
+        SkillTimer2 += Time.deltaTime;
+        if (SkillTimer2 < SkillColldown2)
+        {
+            UI.SetSkillCooldown(2, (SkillTimer2 / SkillColldown2));
+        }
+    }
     public void Bandit_short(InputAction.CallbackContext obj)
     {
          
     }
     public void Throw(InputAction.CallbackContext obj)
     {
+        if (SkillTimer2 < SkillColldown2)
+        {
+            return;
+        }
         GameObject TDagger = Instantiate(DaggerPrefeb);
         TDagger.transform.position = new Vector2(Attackpos.position.x, Attackpos.position.y - 0.25f);
 
@@ -43,7 +58,8 @@ public class PlayerSkill : MonoBehaviour
         }
         TDagger.GetComponent<Rigidbody2D>().linearVelocityX = shotVec.x * BulletSpeed;
         TDagger.GetComponent<Dagger>().setPen(Penetration);
-
+        SkillTimer2 = 0;
+        UI.SetSkillCooldown(2, 0);
         StopCoroutine("AttackCancel");
         StartCoroutine("AttackCancel");
     }
@@ -51,6 +67,7 @@ public class PlayerSkill : MonoBehaviour
     {
         animator.SetBool("Skill2", true);
         yield return new WaitForSeconds(0.15f);
+        
         animator.SetBool("Skill2", false);
         yield break;
     }
