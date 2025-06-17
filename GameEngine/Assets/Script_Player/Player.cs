@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 
 public class Player : MonoBehaviour
@@ -47,6 +48,10 @@ public class Player : MonoBehaviour
     public bool Fliper()
     {
         return sprite.flipX;
+    }
+    public void SetStartPos(Vector2 pos)
+    {
+        transform.position = pos;
     }
     void Start()
     {
@@ -178,7 +183,7 @@ public class Player : MonoBehaviour
 
     private IEnumerator DisableCollision()
     {
-        BoxCollider2D platformCollider = CollisionPlatform.GetComponent<BoxCollider2D>();
+        TilemapCollider2D platformCollider = CollisionPlatform.GetComponent<TilemapCollider2D>();
         Physics2D.IgnoreCollision(collision, platformCollider);
         yield return new WaitForSeconds(0.5f);
         Physics2D.IgnoreCollision(collision, platformCollider, false);
@@ -194,7 +199,9 @@ public class Player : MonoBehaviour
             PlayerAnimator.SetBool("Hit", true);
             Invoke("OffDamaged", 0.5f);
         }
-        else { PlayerAnimator.SetBool("Dead", true); Dead = true; }
+        else { PlayerAnimator.SetBool("Dead", true); Dead = true; 
+            
+        }
         Rigidbody.AddForce(new Vector2(dirc * Hitforce, 1), ForceMode2D.Impulse);
         sprite.color = new Color(1, 1, 1, 0.4f);
     }
